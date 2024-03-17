@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
-project(Amethyst-Template)
-set(MOD_VERSION "1.0.0")
-set(MOD_AUTHOR "FrederoxDev")
+project(AmethystTester)
+set(MOD_VERSION "1.2.1")
 
-# Define only RelWithDebInfo as the available build configuration
+# Runtime Build Options
+option(AMETHYST_INPUT_SYSTEM "Enables AmethystAPI's input system" OFF)
+
+# C++ Build Settings
 set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo" CACHE STRING "Build configurations" FORCE)
 set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo" FORCE)
 set(CMAKE_CXX_STANDARD 23)
@@ -14,7 +16,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${AmethystFolder}/mods/${PROJ
 
 # Include Amethyst
 find_library(AMETHYST_API AmethystAPI PATHS "${AmethystFolder}/lib")
-include_directories(${AmethystFolder}/include "include/")
+include_directories(${AmethystFolder}/include )
+
+# Compile definitions 
+if (AMETHYST_INPUT_SYSTEM) 
+    add_compile_definitions(AMETHYST_INPUT_SYSTEM)
+endif()
 
 # Project Files
 file(GLOB_RECURSE CPP_SOURCES "src/*.cpp")
@@ -36,7 +43,7 @@ endforeach()
 target_compile_definitions(${PROJECT_NAME} PRIVATE MOD_VERSION="${MOD_VERSION}")
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE ${AMETHYST_API})
+target_link_libraries(${PROJECT_NAME} PRIVATE "${AmethystFolder}/lib/AmethystAPI.lib")
 target_link_libraries(${PROJECT_NAME} PRIVATE "${AmethystFolder}/lib/fmt.lib")
 target_link_libraries(${PROJECT_NAME} PRIVATE "${AmethystFolder}/lib/libhat.lib")
 
