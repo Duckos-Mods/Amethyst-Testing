@@ -2,9 +2,11 @@
 #include <amethyst/Log.h>
 #include <amethyst/Memory.h>
 #include <amethyst/runtime/AmethystContext.h>
+#include <vector>
 
 #define FUNC_ONE_BYTE_OFFSET 0x15C
 #define FUNC_TWO_BYTE_OFFSET 0x54B
+#define FUNC_THREE_BYTE_OFFSET 0x13D
 
 
 ModFunction void Initialize(AmethystContext* ctx)
@@ -23,35 +25,24 @@ ModFunction void Initialize(AmethystContext* ctx)
 	else
 		Log::Error("Failed to find address!");
 
+
+	auto addrThree = SigScanSafe("48 89 5C 24 ? 55 56 57 41 54 41 55 41 56 41 57 48 8D AC 24 ? ? ? ? 48 81 EC ? ? ? ? 48 8B 05 ? ? ? ? 48 33 C4 48 89 85 ? ? ? ? 49 8B D8 48 89 5C 24 ? 48 8B FA 48 89 55");
+
 	uintptr_t addrOneNormal = addrOne.value();
 	uintptr_t addrTwoNormal = addrTwo.value();
+	uintptr_t addrThreeNormal = addrThree.value();
 
 	uintptr_t addrOneOffset = addrOneNormal + FUNC_ONE_BYTE_OFFSET;
 	uintptr_t addrTwoOffset = addrTwoNormal + FUNC_TWO_BYTE_OFFSET;
-
-	DWORD oldProtect;
-	if (!UnprotectMemory(addrOneOffset, 1, &oldProtect))
-		Log::Error("Failed to unprotect memory!");
-
-	if (!UnprotectMemory(addrTwoOffset, 1, &oldProtect))
-		Log::Error("Failed to unprotect memory!");
-
-	Log::Info("Memory position one: 0x{:X}", *(uint8_t*)addrOneOffset);
-	Log::Info("Memory position two: 0x{:X}", *(uint8_t*)addrTwoOffset);
-
+	uintptr_t addrThreeOffset = addrThreeNormal + FUNC_THREE_BYTE_OFFSET;
 	uint8_t replaceVal = 0xFF;
 	Amethyst::PatchManager* patchManager = &ctx->mPatchManager;
 
 	patchManager->ApplyPatch(addrOneOffset, &replaceVal, 1);
 	patchManager->ApplyPatch(addrTwoOffset, &replaceVal, 1);
 
-	Log::Info("Memory position one: 0x{:X}", *(uint8_t*)addrOneOffset);
-	Log::Info("Memory position two: 0x{:X}", *(uint8_t*)addrTwoOffset);
+	int32_t replaceValTwo = INT32_MAX - 1;
+	patchManager->ApplyPatch(addrThreeOffset, replaceValTwo);
 
-
-	ProtectMemory(addrOneOffset, 1, oldProtect);
-	ProtectMemory(addrTwoOffset, 1, oldProtect);
-
-	
 
 }
